@@ -1,3 +1,14 @@
+# ── Secrets : lus dans le coffre en mémoire de la machine (1Password), jamais écrits ici.
+#    Voir ~/.config/secrets/LISEZMOI.md. Hors de cette machine : variable d'environnement.
+def _secret(chemin, variable):
+    import os, time
+    p = os.path.expanduser('~/.config/secrets/valeurs/' + chemin)
+    fin = time.time() + 900
+    while chemin and os.path.islink(p) and not os.path.exists(p) and time.time() < fin:
+        time.sleep(2)   # ouverture de session : le coffre n'est pas encore monté
+    return open(p).read().strip() if chemin and os.path.exists(p) else os.environ.get(variable, '')
+_SECRET_HF = _secret('', 'HF_TOKEN')
+
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import os
 from os import listdir
@@ -17,7 +28,7 @@ import language_tool_python
 import whisper
 
 whisper_model = whisper.load_model("medium")
-pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization@2.1", use_auth_token="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")
+pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization@2.1", use_auth_token=_SECRET_HF)
 tool = language_tool_python.LanguageTool('fr')
 
 
